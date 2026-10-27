@@ -1,7 +1,7 @@
 ---
 name: vnc-remote-linux
-description: "Drive a remote Linux desktop over VNC from an agent: screenshot, type text, click, and run shell commands by speaking the RFB protocol directly with vncdotool, instead of automating a local VNC viewer. Runs on Windows, macOS and Linux. Use when a remote machine is reachable only as a graphical desktop (no SSH), or when automating the local viewer is inconvenient, blocked by OS permissions, or corrupts keystrokes through its keyboard layout. Skip when SSH/scp is available — a shell over SSH is always cheaper than pixels."
-version: 2.0.0
+description: "Drive a remote Linux desktop over VNC from an agent: screenshot, type text, click, and run shell commands by speaking the RFB protocol directly with vncdotool, instead of automating a local VNC viewer. Runs on Windows, macOS and Linux. Use when a remote machine is reachable only as a graphical desktop (no SSH), or when automating the local viewer is inconvenient, blocked by OS permissions, or corrupts keystrokes through its keyboard layout. Skip when SSH/scp is available: a shell over SSH is always cheaper than pixels."
+version: 2.0.1
 license: MIT
 triggers:
   - "VNC"
@@ -19,7 +19,7 @@ triggers:
 Talk to the **VNC server** directly instead of driving a local VNC viewer.
 The viewer is a human interface; RFB is a machine one.
 
-You get four primitives — screenshot, type, click, key — and from those, shell
+You get four primitives (screenshot, type, click, key), and from those, shell
 access to the remote machine.
 
 ## When to use this
@@ -44,7 +44,7 @@ Speaking RFB sidesteps all three:
 - nothing steals focus or moves the user's pointer.
 
 The cost is that you only get what RFB offers: framebuffer, keyboard, pointer,
-clipboard. There is no file-copy primitive — see "Transferring files in".
+clipboard. There is no file-copy primitive; see "Transferring files in".
 
 ## Install
 
@@ -120,14 +120,14 @@ Subcommands:
 | `click X Y [BTN]` | move, settle, press |
 | `dclick X Y` | two presses ~90 ms apart |
 | `move X Y` | move only |
-| `run TEXT OUT [WAIT]` | type, press Return, wait WAIT seconds, capture — the fastest loop |
+| `run TEXT OUT [WAIT]` | type, press Return, wait WAIT seconds, capture. The fastest loop. |
 | `script FILE` | many operations over **one** connection |
 
 For anything beyond a couple of steps use `script`, so the sequence shares one
 connection instead of reconnecting per action:
 
 ```text
-# ops.txt — one op per line; blank lines and # comments are ignored
+# ops.txt, one op per line; blank lines and # comments are ignored
 capture 00-before.png
 type cd /opt/work
 key return
@@ -168,7 +168,7 @@ These follow from the vncdotool API:
 
 ## The remote shell
 
-The remote is a Linux desktop, and its shell is whatever the account uses —
+The remote is a Linux desktop, and its shell is whatever the account uses:
 commonly `bash`, sometimes `tcsh` or `zsh`. The driver injects characters, not
 a shell session, so quoting is your responsibility.
 
@@ -184,7 +184,7 @@ short, and split work across several `type` operations when it grows. If a
 command that should produce output produces none, re-issue it in smaller pieces
 before drawing a conclusion.
 
-Non-ASCII filenames cannot be typed — there is no input method in an injected
+Non-ASCII filenames cannot be typed. There is no input method in an injected
 keystroke. Address them with an ASCII glob (`*Application*.pdf`) or by attribute
 (`find . -size +1000k`), or copy them to an ASCII name first.
 
@@ -215,7 +215,7 @@ Two rules:
   generator printed. A matching line count is weak; a matching md5 is not.
 
 Throughput is roughly 1 KB per 8 seconds at a 5 ms character delay. That is
-fine for scripts and RTL, hopeless for megabytes — above a few hundred KB use
+fine for scripts and RTL, hopeless for megabytes. Above a few hundred KB, use
 whatever upload channel the host provides (FTP, SFTP, a shared drive) and keep
 this method for text you cannot otherwise get across.
 

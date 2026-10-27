@@ -1,38 +1,39 @@
 # vnc-remote-linux
 
-An agent skill for driving a remote Linux desktop over VNC — screenshot, type,
-click, and run shell commands — by talking to the **VNC server directly** with
-[`vncdotool`](https://github.com/sibson/vncdotool) instead of automating a local
-VNC viewer.
+Drive a remote Linux desktop from an agent over VNC: take screenshots, type
+text, click, and run shell commands. The driver talks to the VNC server
+directly through [`vncdotool`](https://github.com/sibson/vncdotool) instead of
+automating a local viewer, so keystrokes are sent as keysyms and the local
+keyboard layout cannot corrupt them.
 
-Works on **Windows, macOS and Linux**. Pure Python, nothing to compile.
+Runs on Windows, macOS and Linux. Pure Python, nothing to compile.
 
 ```
 capture  ->  decide  ->  act  ->  capture again
 ```
 
-## Why not just drive the VNC viewer
+## Why not drive the local viewer
 
 A viewer is built for a person at a keyboard. It translates local keycodes
-through the local keyboard layout, needs OS-level input and screen permissions,
-and owns a real window that competes with the user's.
+through the local layout, asks the operating system for input and
+screen-capture permission, and owns a window that competes with the user's.
 
-Speaking RFB avoids all three:
+Speaking RFB avoids those three constraints:
 
-- keys go out as **keysyms** (Unicode code points); the server maps them to its
-  own layout, so your local layout cannot corrupt them;
-- no Accessibility, Screen Recording, or input-injection permission is involved
-  on any platform;
-- nothing takes focus and nothing moves the user's pointer.
+- keys go out as keysyms (Unicode code points), and the server maps them to its
+  own layout;
+- no Accessibility, Screen Recording, or input-injection permission is used on
+  any platform;
+- focus and the real pointer stay where the user put them.
 
-Everything is driven from a terminal, so it also works headless and over SSH —
-you only need network reachability to the VNC port.
+Because the driver runs from a terminal, it also works headless and over SSH.
+You need network reachability to the VNC port and nothing else.
 
 ## Requirements
 
-- Python 3.9+ on the machine running the driver
+- Python 3.9 or newer on the machine running the driver
 - A reachable VNC endpoint and its password
-- The remote host must already have a running desktop session
+- An existing desktop session on the remote host
 
 ## Install
 
@@ -43,11 +44,12 @@ python scripts/setup.py
 ```
 
 `setup.py` creates a virtualenv at `~/.venvs/vnc`, installs `vncdotool`, asks
-once for the VNC password (hidden input), and prints the exact interpreter and
-driver paths for your OS.
+once for the VNC password with input hidden, and prints the interpreter and
+driver paths for your platform.
 
-Why a virtualenv: several systems refuse system-wide `pip install` and require
-an override flag. The venv makes that unnecessary everywhere.
+The virtualenv is not decoration. Homebrew Python, Debian, Fedora, and some
+python.org Windows builds refuse a system-wide `pip install` under PEP 668 and
+require an override flag. A venv avoids that on all three platforms.
 
 ## Quick start
 
@@ -63,7 +65,7 @@ DRV=scripts/vncdrv.py
 "$PY" "$DRV" --server host.example::5901 run 'uname -a' out.png 4
 ```
 
-`--server` uses `host::port` with a **double** colon for an explicit port.
+`--server` takes `host::port` with a double colon for an explicit port.
 
 ### One connection, many steps
 
@@ -93,16 +95,20 @@ capture 01-after.png
 
 ## Sending files to the remote
 
-RFB has no file-copy primitive. For text files up to a few tens of KB, base64
-through the keyboard is reliable and needs no extra service:
+RFB has no file-copy primitive. For text files, base64 through the keyboard
+needs no extra service on the remote side:
 
 ```bash
 python scripts/gen_upload_ops.py --remote-dir '~/work' ops.txt a.py b.txt
 "$PY" "$DRV" --server host::port script ops.txt
 ```
 
-It chunks at 160 characters per injected line and finishes with `md5sum` for
-every file, so the transfer is verifiable.
+The generator chunks at 160 characters per injected line and ends with `md5sum`
+for every file, so each transfer is verifiable.
+
+Measured throughput is about 1 KB every 8 seconds at a 5 ms character delay
+(10.8 KB in 79 seconds). That covers scripts, configuration, and RTL. Above a
+few hundred KB, use the host's own upload channel: FTP, SFTP, or a shared drive.
 
 ## Password handling
 
@@ -117,7 +123,7 @@ and never echoed. Resolution order:
 
 ## Using it as an agent skill
 
-The repository root *is* the skill: `SKILL.md` plus `scripts/`. Drop or link the
+The repository root is the skill: `SKILL.md` plus `scripts/`. Drop or link the
 directory into your agent's skill root.
 
 | Tool | Skill root |
@@ -129,8 +135,8 @@ directory into your agent's skill root.
 | DeepSeek Harness | `~/.dsh/skills/` |
 | neutral | `~/.agents/skills/` |
 
-When several tools share a machine, keep one real copy and symlink the rest at
-it, so the instructions cannot drift apart:
+When several tools share a machine, keep one real copy and link the rest at it,
+so the instructions cannot drift apart:
 
 ```bash
 ln -s ~/.agents/skills/vnc-remote-linux ~/.codex/skills/vnc-remote-linux
@@ -145,17 +151,19 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.codex\skills\vnc-remote
 
 | Platform | Status | Notes |
 |---|---|---|
-| Linux | supported | pure Python, no native deps |
-| macOS | supported | no Accessibility / Screen Recording permission needed |
+| Linux | supported | pure Python, no native dependencies |
+| macOS | supported | no Accessibility or Screen Recording permission used |
 | Windows | supported | interpreter lives in `Scripts\python.exe` |
 
 ## Limitations
 
-- Needs an existing desktop session on the remote host; it will not create one.
-- Bandwidth is a screen image per `capture`; large resolutions are slower.
-- File transfer by keystroke is practical for tens of KB, not megabytes.
+- Needs an existing desktop session on the remote host; it cannot start one.
+- Each `capture` transfers a full framebuffer. A 1920x1080 screen is typically
+  100 to 200 KB as PNG.
+- File transfer by keystroke runs at about 1 KB per 8 seconds, so it suits tens
+  of KB rather than megabytes.
 - Clipboard transfer is not implemented.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).
