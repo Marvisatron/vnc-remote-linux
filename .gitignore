@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Virtualenvs this project creates by default
+.venvs/
+
+# Secrets: never commit a VNC password
+*.vnc_agent_pass
+.vnc_agent_pass
+
+# Local artefacts
+shot*.png
+*.log
+.DS_Store
+Thumbs.db
