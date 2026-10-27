@@ -7,7 +7,8 @@ backslashes and quotes. Base64's alphabet is [A-Za-z0-9+/=], i.e. nothing the
 shell, or tcsh history expansion, will touch.
 
 Why 160-character chunks: injected lines longer than roughly 200 characters have
-been observed to arrive truncated — the tail of the command silently never runs.
+been observed to arrive truncated, and the tail of the command silently never
+runs.
 Chunking also keeps each op line short enough to read back on screen.
 
 Usage:

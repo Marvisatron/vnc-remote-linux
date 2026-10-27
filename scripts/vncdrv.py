@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""vncdrv.py — drive a remote Linux desktop over the RFB protocol.
+"""vncdrv.py: drive a remote Linux desktop over the RFB protocol.
 
 Speaks VNC directly with vncdotool instead of automating a local viewer, so
 keystrokes are sent as keysyms (Unicode code points) and the server maps them
