@@ -6,7 +6,8 @@ directly through [`vncdotool`](https://github.com/sibson/vncdotool) instead of
 automating a local viewer, so keystrokes are sent as keysyms and the local
 keyboard layout cannot corrupt them.
 
-Runs on Windows, macOS and Linux. Pure Python, nothing to compile.
+Runs on Windows, macOS and Linux, with no native dependencies and nothing to
+compile.
 
 ```
 capture  ->  decide  ->  act  ->  capture again
@@ -107,7 +108,7 @@ The generator chunks at 160 characters per injected line and ends with `md5sum`
 for every file, so each transfer is verifiable.
 
 Measured throughput is about 1 KB every 8 seconds at a 5 ms character delay
-(10.8 KB in 79 seconds). That covers scripts, configuration, and RTL. Above a
+(10.8 KB in 79 seconds), which covers scripts, configuration, and RTL. Above a
 few hundred KB, use the host's own upload channel: FTP, SFTP, or a shared drive.
 
 ## Password handling
@@ -166,4 +167,4 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.codex\skills\vnc-remote
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+Released under the MIT license; see [LICENSE](LICENSE).
